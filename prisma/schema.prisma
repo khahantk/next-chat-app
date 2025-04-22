@@ -1,0 +1,135 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model User {
+  id             String          @id @default(cuid())
+  name           String?
+  email          String?         @unique
+  emailVerified  DateTime?       @map("email_verified")
+  image          String?
+  password       String?
+  role           String          @default("user")
+  address        Json?           @default("[]")
+  isOnline       Int?            @default(0)
+  lastPing       DateTime?
+  products       Product[]
+  accounts       Account[]
+  sessions       Session[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  messages       Message[]       @relation("UserMessages")
+  channelMembers ChannelMember[]
+  Channel        Channel[]
+
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Product {
+  id            String    @id @default(cuid())
+  title         String
+  slug          String
+  description   String
+  category      String
+  images        Json?     @default("[]")
+  brand         String
+  stock         Int       @default(0)
+  originalPrice Decimal   @default(0) // price sach mới
+  price         Decimal   @default(0)
+  rating        Decimal   @default(0)
+  numReviews    Int       @default(0)
+  isFeatured    Boolean   @default(false)
+  banner        String?
+  seller        User      @relation(fields: [sellerId], references: [id])
+  sellerId      String
+  channels      Channel[]
+  createdAt     DateTime  @default(now())
+
+  @@map("products")
+}
+
+model Channel {
+  id        String          @id @default(cuid())
+  name      String?
+  isGroup   Boolean         @default(false)
+  product   Product?        @relation(fields: [productId], references: [id])
+  productId String?
+  owner     User?           @relation(fields: [ownerId], references: [id])
+  ownerId   String?
+  members   ChannelMember[]
+  messages  Message[]
+  createdAt DateTime        @default(now())
+  @@map("channels")
+}
+
+model ChannelMember {
+  id        String   @id @default(cuid())
+  channel   Channel  @relation(fields: [channelId], references: [id])
+  channelId String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  joinedAt  DateTime @default(now())
+
+  @@unique([channelId, userId])
+
+  @@map("channel_members")
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  channel   Channel  @relation(fields: [channelId], references: [id])
+  channelId String
+  sender    User     @relation("UserMessages", fields: [senderId], references: [id])
+  senderId  String
+  content   String
+  createdAt DateTime @default(now())
+
+  @@map("messages")
+}
