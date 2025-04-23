@@ -41,24 +41,25 @@ model Session {
 }
 
 model User {
-  id             String          @id @default(cuid())
+  id             String             @id @default(cuid())
   name           String?
-  email          String?         @unique
-  emailVerified  DateTime?       @map("email_verified")
+  email          String?            @unique
+  emailVerified  DateTime?          @map("email_verified")
   image          String?
   password       String?
-  role           String          @default("user")
-  address        Json?           @default("[]")
-  isOnline       Int?            @default(0)
+  role           String             @default("user")
+  address        Json?              @default("[]")
+  isOnline       Int?               @default(0)
   lastPing       DateTime?
   products       Product[]
   accounts       Account[]
   sessions       Session[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  messages       Message[]       @relation("UserMessages")
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  messages       Message[]          @relation("UserMessages")
   channelMembers ChannelMember[]
   Channel        Channel[]
+  readState      ChannelReadState[]
 
   @@map("users")
 }
@@ -96,16 +97,18 @@ model Product {
 }
 
 model Channel {
-  id        String          @id @default(cuid())
-  name      String?
-  isGroup   Boolean         @default(false)
-  product   Product?        @relation(fields: [productId], references: [id])
-  productId String?
-  owner     User?           @relation(fields: [ownerId], references: [id])
-  ownerId   String?
-  members   ChannelMember[]
-  messages  Message[]
-  createdAt DateTime        @default(now())
+  id               String             @id @default(cuid())
+  name             String?
+  isGroup          Boolean            @default(false)
+  product          Product?           @relation(fields: [productId], references: [id])
+  productId        String?
+  owner            User?              @relation(fields: [ownerId], references: [id])
+  ownerId          String?
+  members          ChannelMember[]
+  messages         Message[]
+  createdAt        DateTime           @default(now())
+  ChannelReadState ChannelReadState[]
+
   @@map("channels")
 }
 
@@ -118,7 +121,6 @@ model ChannelMember {
   joinedAt  DateTime @default(now())
 
   @@unique([channelId, userId])
-
   @@map("channel_members")
 }
 
@@ -132,4 +134,13 @@ model Message {
   createdAt DateTime @default(now())
 
   @@map("messages")
+}
+
+model ChannelReadState {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  channel    Channel  @relation(fields: [channelId], references: [id])
+  channelId  String
+  lastReadAt DateTime
 }

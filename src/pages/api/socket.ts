@@ -29,6 +29,15 @@ export default function handler(req: NextApiRequest, res: any) {
         io.to(channelId).emit('system', `${userName} ${socket.id} has joined.`);
       });
 
+      socket.on("joinMultiple", ({ channelIds }: { channelIds: string[] }) => {
+        channelIds.forEach((id) => socket.join(id));
+      });
+    
+      socket.on("leaveMultiple", ({ channelIds }: { channelIds: string[] }) => {
+        channelIds.forEach((id) => socket.leave(id));
+      });
+    
+
       socket.on('leaveRoom', (channelId, userName = 'User') => {
         socket.leave(channelId);
         console.log(`${socket.id} left room: ${channelId}`);

@@ -8,7 +8,10 @@ export default function MessageLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SidebarProvider>
+    <SidebarProvider style={{
+      "--sidebar-width": "28rem",
+      "--sidebar-width-mobile": "20rem",
+    }}>
       <MessageSidebar/>
       <div className="flex w-full flex-col">
         <SidebarTrigger />

@@ -1,13 +1,13 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Channel } from '@prisma/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { useSearchParams } from "next/navigation";
 import { io } from 'socket.io-client';
 import debounce from "lodash.debounce";
-import { MessageWithSender } from "@/types";
+import { ChannelWithData, MessageWithSender } from "@/types";
 
 
 const MessageContext = createContext(null);
@@ -46,7 +46,7 @@ export const MessageProvider = ({
     queryFn: async () => {
       const res = await fetch('/api/channels');
       if (!res.ok) throw new Error('Failed to fetch channels');
-      return (await res.json()) as Channel[];
+      return (await res.json()) as ChannelWithData[];
     },
     enabled: status === 'authenticated',
   });
@@ -62,7 +62,7 @@ export const MessageProvider = ({
       if (!selectedChannelId) return [];
       const res = await fetch(`/api/messages/${selectedChannelId}`);
       if (!res.ok) throw new Error('Failed to fetch messages');
-      return res.json();
+      return await res.json() as MessageWithSender[];
     },
     enabled: !!selectedChannelId,
   });
@@ -113,7 +113,7 @@ export const MessageProvider = ({
       socket.off('receiveMsg', messageHandler);
       socket.off("typing", typingHandler);
       socket.off("stopTyping", stopTypingHandler);
-      socket.disconnect();
+      // socket.disconnect();
     };
   }, [selectedChannelId, queryClient, socket]);
 
@@ -123,6 +123,24 @@ export const MessageProvider = ({
       setSelectedChannelId(channelId);
     }
   }, [searchParams])
+
+  useEffect(() => {
+    const saved = localStorage.getItem("selectedChannelId");
+    if (saved) {
+      setSelectedChannelId(saved);
+    }
+  }, []);
+  useEffect(() => {
+    if (channels && channels.length > 0 && !selectedChannelId) {
+      setSelectedChannelId(channels[0].id)
+    }
+  }, [ channels, selectedChannelId ]);
+  
+  useEffect(() => {
+    if (selectedChannelId) {
+      localStorage.setItem("selectedChannelId", selectedChannelId);
+    }
+  }, [selectedChannelId]);
 
   const selectChannel = (id: string) => {
     setSelectedChannelId(id);
@@ -156,6 +174,17 @@ export const MessageProvider = ({
     }
   }, [selectedChannelId, session]);
 
+  const currentSelectedChannel: ChannelWithData | undefined = useMemo(() => {
+    return channels?.find(channel => channel.id === selectedChannelId)
+  }, [channels, selectedChannelId])
+
+  const getPartnerOfSelectedChannel = () => {
+    const channel: ChannelWithData | undefined = channels?.find(channel => channel.id === selectedChannelId)
+    return channel?.members?.find((user) => {
+      return user.userId !== session?.user?.id;
+    });
+  } 
+
   const value = {
     session,
     channels: channels || [],
@@ -169,6 +198,8 @@ export const MessageProvider = ({
     socket,
     emitTyping,
     emitStopTyping,
+    partnerOfSelectedChannel: getPartnerOfSelectedChannel(),
+    currentSelectedChannel,
     typingUsers: typingUsers || [],
   };
 
