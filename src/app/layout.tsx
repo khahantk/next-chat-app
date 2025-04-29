@@ -3,14 +3,15 @@ import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider"
 import { SessionProvider } from 'next-auth/react';
 import "./globals.css";
+import { APP_NAME } from "@/lib/constants";
 
 const inter = Inter({ subsets: ['latin'] });
 
-
 export const metadata: Metadata = {
-  defalt: "Dashboard",
-  template: "%s | Shop",
-  description: "",
+  title: {
+    template: `%s | ${APP_NAME}`,
+    default: APP_NAME,
+  },
 };
 
 export default function RootLayout({

@@ -25,7 +25,7 @@ const ForgotPasswordForm = () => {
   return (
     <>
       <form className="flex flex-col min-w-87 p-5 max-w-[420px] mx-auto" action={action}>
-        <h1 className="text-2xl font-medium text-center">Sign in</h1>
+        <h1 className="text-2xl font-medium text-center">Forgot Password</h1>
         <div className="flex flex-col gap-4 mt-8">
           <div>
             <Label htmlFor="email" className="pb-2">Email</Label>
