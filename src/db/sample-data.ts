@@ -34,12 +34,13 @@ const sampleData = {
   ],
   products: [
     {
-      title: 'Product 1',
-      slug: 'product-1',
-      description: 'description text',
+      title: 'The Complete Developer: Master the Full Stack with TypeScript, React, Next.js',
+      slug: 'the-complete-developer-master-the-full-stack-with-typescript-react-nextjs',
+      description: 'Web / Web Services & APIs, Web / Web Programming, General, Programming Languages / Javascript',
       category: 'category text',
       brand: 'brand text',
       author: 'author text',
+      price: 46.83,
       sellerId: 'cm9jmoaca0003t0d6qliny59s'
     }
   ]

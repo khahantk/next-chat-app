@@ -49,7 +49,6 @@ model User {
   password       String?
   role           String             @default("user")
   address        Json?              @default("[]")
-  isOnline       Int?               @default(0)
   lastPing       DateTime?
   products       Product[]
   accounts       Account[]
@@ -60,6 +59,8 @@ model User {
   channelMembers ChannelMember[]
   Channel        Channel[]
   readState      ChannelReadState[]
+  isOnline  Boolean  @default(false)
+  lastSeen  DateTime?
 
   @@map("users")
 }
@@ -143,4 +144,6 @@ model ChannelReadState {
   channel    Channel  @relation(fields: [channelId], references: [id])
   channelId  String
   lastReadAt DateTime
+  @@unique([channelId, userId])
+  
 }

@@ -48,7 +48,7 @@ export default function MessageInput() {
           <Button
             onClick={handleSend}
             size="icon"
-            className="rounded-full bg-green-700"
+            className="rounded-full bg-primary"
           >
             <Send className="size-5" />
           </Button>

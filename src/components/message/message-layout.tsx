@@ -11,11 +11,12 @@ export default function MessageLayout({
     <SidebarProvider style={{
       "--sidebar-width": "28rem",
       "--sidebar-width-mobile": "20rem",
-    }}>
+    }}
+    >
       <MessageSidebar/>
       <div className="flex w-full flex-col">
         <SidebarTrigger />
-        <div className="flex w-full ">
+        <div className="flex w-full h-full">
           {children}
         </div>
       </div>

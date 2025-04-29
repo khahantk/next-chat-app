@@ -12,13 +12,17 @@ const ProductChat = ({ product }: { product: Product }) => {
   const router = useRouter();
   const pathname = usePathname()
   const handleMessageButton = async () => {
+    console.log('handle chat button click')
     if (!session?.data?.user?.id) {
       router.push(`/signin?ret=${pathname}`);
     }
-    const res = await fetch(`/api/channels/${product.id}/`);
+    const res = await fetch(`/api/channels/product/${product.id}/`);
     const data = await res.json();
     setChannelId(data.id);
   }
+  useEffect(() => {
+    console.log(session);
+  }, [session])
 
   useEffect(() => {
     if (channelId) {

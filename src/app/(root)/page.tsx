@@ -1,9 +1,10 @@
 import { fetchTopProducts } from "@/db/queries/product";
+import { APP_NAME } from "@/lib/constants";
 import { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: 'Home'
+  title: APP_NAME
 }
 
 export default async function Home() {

@@ -54,3 +54,24 @@ export async function fetchUserByCredentials(email: string, password: string): P
   }
   return null
 }
+
+export async function setUserOnline(userId: string) {
+  try { 
+    await prisma.user.update({
+      where: { id: userId },
+      data: { isOnline: true },
+    });
+  } catch (e) {
+    console.log(e)
+  }
+}
+export async function setUserOffline(userId: string) {
+  try { 
+    await prisma.user.update({
+      where: { id: userId },
+      data: { isOnline: true },
+    });
+  } catch (e) {
+    console.log(e)
+  }
+}

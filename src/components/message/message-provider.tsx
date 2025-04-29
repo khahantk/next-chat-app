@@ -1,7 +1,6 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { Channel } from '@prisma/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { useSearchParams } from "next/navigation";
@@ -11,7 +10,7 @@ import { ChannelWithData, MessageWithSender } from "@/types";
 
 
 const MessageContext = createContext(null);
-let socket: any;
+let socket: ReturnType<typeof io>;;
 export const MessageProvider = ({
   children,
 }: {
@@ -24,6 +23,28 @@ export const MessageProvider = ({
     null
   );
   const [typingUsers, setTypingUsers] = useState([]);
+
+  const markChannelAsRead = async (channelId: string) => {
+    await fetch(`/api/channels/${channelId}/read`, { method: "POST" });
+    socket.emit("read", { channelId, userId: session?.user?.id });
+    queryClient.invalidateQueries(["unreadCounts"]);
+
+  };
+
+  const {
+    data: unreadCounts = {},
+    refetch: refetchUnreadCounts,
+  } = useQuery({
+    queryKey: ["unreadCounts"],
+    queryFn: async () => {
+      const res = await fetch("/api/channels/unread-counts");
+      if (!res.ok) throw new Error("Failed to fetch unread counts");
+      const data = await res.json();
+      return Object.fromEntries(data.unreadCounts.map(i => [i.channelId, i.unreadCount]));
+    },
+    enabled: status === "authenticated",
+   // refetchInterval: 5000,
+  });
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -73,12 +94,14 @@ export const MessageProvider = ({
 
     const messageHandler = (message: MessageWithSender) => {
       console.log(`Receiving message: `, message)
+      
       if (message.channelId === selectedChannelId) {
         queryClient.setQueryData(
           ['messages', selectedChannelId],
           (old = []) => [...old, message]
         );
       }
+      queryClient.invalidateQueries(["unreadCounts"]);
     };
     const typingHandler = ({ user, userId }: {user: string, userId: string}) => {
       if (userId === session?.user?.id) {
@@ -145,6 +168,7 @@ export const MessageProvider = ({
   const selectChannel = (id: string) => {
     setSelectedChannelId(id);
     setTypingUsers([]);
+    markChannelAsRead(id); 
   };
 
   const sendMessage = async (content: string) => {
@@ -178,8 +202,8 @@ export const MessageProvider = ({
     return channels?.find(channel => channel.id === selectedChannelId)
   }, [channels, selectedChannelId])
 
-  const getPartnerOfSelectedChannel = () => {
-    const channel: ChannelWithData | undefined = channels?.find(channel => channel.id === selectedChannelId)
+  const getPartnerOfChannel = (channelId: string) => {
+    const channel: ChannelWithData | undefined = channels?.find(channel => channel.id === channelId)
     return channel?.members?.find((user) => {
       return user.userId !== session?.user?.id;
     });
@@ -198,9 +222,11 @@ export const MessageProvider = ({
     socket,
     emitTyping,
     emitStopTyping,
-    partnerOfSelectedChannel: getPartnerOfSelectedChannel(),
+    getPartnerOfChannel,
     currentSelectedChannel,
     typingUsers: typingUsers || [],
+    unreadCounts,
+    refetchUnreadCounts
   };
 
   return (
