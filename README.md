@@ -6,7 +6,7 @@
 [![Prisma](https://img.shields.io/badge/ORM-Prisma-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io)
 [![Auth.js](https://img.shields.io/badge/Auth-Auth.js-orange)](https://authjs.dev)
 
-A full-stack, real-time chat application built with Next.js 15, React 19, Prisma, and SQLite.  
+A full-stack, real-time chat application built with Next.js 15, React 19, Prisma, and Auth.js.  
 Supports private 1-on-1 messaging, group channels, and marketplace-style product discussions.
 
 ---
