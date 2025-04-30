@@ -3,7 +3,7 @@ import { APP_NAME } from '@/lib/constants';
 import { Library } from 'lucide-react';
 import Link from 'next/link';
 
-export default function RootLayout({
+export default function AuthLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
